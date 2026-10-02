@@ -88,6 +88,7 @@ class Overrides:
 
 # --------------------------------------------------------------------------- rules
 SMALL_PICTURE = 0.02  # pictures under 2% of the slide area are logos/icons, not photos
+FLAT_PICTURE = 40     # image_detail() below this: a flat colour / gradient / simple graphic, not a photo
 
 
 def rule(sh: Shape, slide_area: int = 0) -> Tuple[str, str]:
@@ -107,6 +108,8 @@ def rule(sh: Shape, slide_area: int = 0) -> Tuple[str, str]:
     if sh.is_picture:
         if sh.av:
             return MEDIA, "rule 2: video/audio, kept on slide"
+        if sh.detail is not None and sh.detail < FLAT_PICTURE:
+            return CHROME, "rule 4: picture of a flat colour or gradient, static graphic"
         if slide_area and sh.bbox and sh.bbox[2] * sh.bbox[3] < SMALL_PICTURE * slide_area:
             return CHROME, "rule 2: small picture (logo/icon), static graphic"
         if sh.kind == "pic":

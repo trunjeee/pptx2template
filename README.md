@@ -10,6 +10,17 @@ pptx2template deck.pptx --dry-run        # inspect what it inferred
 pptx2template deck.pptx -o deck.potx     # build the template
 ```
 
+## Example
+
+[`examples/trj.pptx`](examples/trj.pptx) is a real design exported to PowerPoint, so its cards,
+gradients and icons are pictures. Run `pptx2template examples/trj.pptx` (or open it in the app):
+the flat pictures become layout decoration, the two photos become picture placeholders, and a
+new slide made from any layout looks like the original slide with empty fields. The deck uses the
+free [Onest](https://fonts.google.com/specimen/Onest) font. Without it, PowerPoint substitutes
+another font and the text spacing looks off, in the original deck as well as in the template.
+Embedding fonts (*File → Options → Save → Embed fonts*) before converting carries them into the
+template.
+
 ## App (any OS)
 
 ```
@@ -64,6 +75,7 @@ The tool checks every top-level shape against these rules, and the first one tha
 | 2 | `<p:pic>` | **picture placeholder** with the picture's geometry (video/audio stays on the slide) |
 | 3 | `<p:sp>` with `<a:blipFill>` (photo inside a shape) | **picture placeholder** with the shape's geometry (rounded rect, custom shape…). A photo you insert later gets the same crop |
 | 2–3 | picture smaller than 2% of the slide | **chrome**: a logo or icon, not a photo |
+| 2–3 | picture that is only a flat colour or a smooth gradient (no fine detail) | **chrome**: a card or background exported as an image, not a photo |
 | 4 | solid / gradient / pattern / theme fill, no text | **chrome** |
 | 5 | no fill, no text (spacers, a lone `·` glyph) | **chrome** |
 | 6 | group without editable text (logo lockups) | **chrome**, moved as a whole |

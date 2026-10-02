@@ -28,13 +28,19 @@ VIOLET = (0x6C, 0x4A, 0xB6)
 SAND = (0xF2, 0xC1, 0x4E)
 
 
-def png(top=(40, 120, 90), bottom=(170, 200, 120), w=96, h=64) -> bytes:
-    """A small vertical-gradient PNG standing in for a photo."""
+def png(top=(40, 120, 90), bottom=(170, 200, 120), w=96, h=64, texture=True) -> bytes:
+    """A small PNG standing in for a photo: a vertical gradient with grainy texture.
+    Without texture it is a flat graphic, which the converter treats as decoration."""
     rows = []
+    seed = 12345
     for y in range(h):
         t = y / (h - 1)
-        px = bytes(int(a + (b - a) * t) for a, b in zip(top, bottom))
-        rows.append(b"\x00" + px * w)
+        row = bytearray(b"\x00")
+        for x in range(w):
+            seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF
+            grain = ((seed >> 16) % 81) - 40 if texture else 0
+            row += bytes(max(0, min(255, int(a + (b - a) * t) + grain)) for a, b in zip(top, bottom))
+        rows.append(bytes(row))
     raw = b"".join(rows)
 
     def chunk(tag, data):

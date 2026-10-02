@@ -37,6 +37,7 @@ class Shape:
     animated: bool
     frame_kind: str = ""          # for graphicFrame: table / chart / diagram / object
     av: bool = False              # picture that is really a video/audio frame
+    detail: Optional[int] = None  # for pictures: how much fine detail the image has (see image_detail)
     # filled in by classify
     verdict: str = ""             # placeholder | media | chrome
     reason: str = ""
@@ -230,11 +231,51 @@ def find_ph(root, ph_type: Optional[str], ph_idx: Optional[int], master: bool = 
     return None
 
 
+def image_detail(blob: bytes) -> Optional[int]:
+    """How much fine detail an image has: the 99th percentile of neighbour-pixel colour change
+    on a ~96 px thumbnail, ignoring transparent pixels. Photos score roughly 90+, flat colour
+    cards, gradients and simple icons stay under ~20. None if the image cannot be decoded."""
+    try:
+        import io
+        from PIL import Image  # Pillow ships with python-pptx
+        im = Image.open(io.BytesIO(blob))
+        im.draft("RGB", (192, 192))
+        im = im.convert("RGBA")
+        im.thumbnail((96, 96))
+    except Exception:
+        return None
+    w, h = im.size
+    px = im.load()
+    diffs = []
+    for y in range(h - 1):
+        for x in range(w - 1):
+            a, b, c = px[x, y], px[x + 1, y], px[x, y + 1]
+            if a[3] < 250 or b[3] < 250 or c[3] < 250:
+                continue
+            diffs.append(abs(a[0] - b[0]) + abs(a[1] - b[1]) + abs(a[2] - b[2])
+                         + abs(a[0] - c[0]) + abs(a[1] - c[1]) + abs(a[2] - c[2]))
+    if not diffs:
+        return 0
+    diffs.sort()
+    return diffs[int(len(diffs) * 0.99)]
+
+
 class Inheritance:
     """Resolves what a slide placeholder inherits from its layout and master."""
 
     def __init__(self, pkg: Package):
         self.pkg = pkg
+        self._detail: Dict[str, Optional[int]] = {}
+
+    def picture_detail(self, part: str, el) -> Optional[int]:
+        """image_detail() of the picture a pic / picture-filled shape shows (cached per image part)."""
+        blip = next(inner_shape(el).iter(qn("a:blip")), None)
+        info = self.pkg.rels(part).get(blip.get(qn("r:embed"))) if blip is not None and blip.get(qn("r:embed")) else None
+        if not info or info[2] == "External" or not self.pkg.has(info[1]):
+            return None
+        if info[1] not in self._detail:
+            self._detail[info[1]] = image_detail(self.pkg.blob(info[1]))
+        return self._detail[info[1]]
 
     def root(self, part: Optional[str]):
         return self.pkg.xml(part) if part and self.pkg.has(part) else None
@@ -365,4 +406,5 @@ def _make_shape(el, pos, slide, inh: Inheritance, base_size: int, anim: Set[int]
         is_ph=ph is not None, max_font=max(sizes) if sizes else None, animated=sid in anim,
         frame_kind=frame_kind(el) if kind == "graphicFrame" else "",
         av=kind == "pic" and _is_av(el),
+        detail=inh.picture_detail(slide.part, el) if kind == "pic" or fill_of(el) == "blip" else None,
     )

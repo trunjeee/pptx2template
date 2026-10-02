@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pptx2template"
-version = "0.1.0"
+version = "0.2.0"
 description = "Convert an ordinary PowerPoint deck into a reusable multi-layout .potx template - rule-based, offline, no AI."
 readme = "README.md"
 license = {text = "MIT"}

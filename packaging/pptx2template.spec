@@ -29,7 +29,7 @@ if sys.platform == "darwin":
         name="pptx2template.app",
         icon=ICON,
         bundle_identifier="io.github.pptx2template",
-        info_plist={"CFBundleShortVersionString": "0.1.0", "NSHighResolutionCapable": True},
+        info_plist={"CFBundleShortVersionString": "0.2.0", "NSHighResolutionCapable": True},
     )
 else:
     exe = EXE(

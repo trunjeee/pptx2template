@@ -13,7 +13,7 @@ from .package import finalize
 from .parser import Deck, parse_deck
 from .report import format_report
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = ["analyze", "convert", "Analysis", "ConvertResult", "Overrides", "__version__"]
 
