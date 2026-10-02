@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pptx2template</title>
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><img src="/static/icon.svg" alt=""><span>pptx2template</span></div>
+  <div class="file" id="fileName"></div>
+  <div class="spacer"></div>
+  <label id="tolWrap" class="tol" title="Насколько могут сдвигаться фигуры, чтобы слайды считались одним лейаутом">
+    Допуск <input id="tolerance" type="number" min="0" step="0.5"> мм
+  </label>
+  <button id="openBtn" class="btn">Открыть .pptx</button>
+  <button id="resetBtn" class="btn ghost" title="Убрать все ручные правки">Сбросить правки</button>
+  <a id="yamlBtn" class="btn ghost" href="/api/overrides.yaml" title="Скачать ручные правки как overrides.yaml">overrides.yaml</a>
+  <label id="keepWrap" class="check"><input id="keepSlides" type="checkbox" checked> с примерами слайдов</label>
+  <button id="buildBtn" class="btn primary">Собрать шаблон</button>
+  <button id="quitBtn" class="btn ghost icon" title="Закрыть приложение">⏻</button>
+  <input id="fileInput" type="file" accept=".pptx,.pptm,.ppsx,.potx" hidden>
+</header>
+
+<main id="app" class="app hidden">
+  <aside class="layouts">
+    <h2>Лейауты <span id="layoutCount" class="count"></span></h2>
+    <div id="layoutList"></div>
+    <div id="warnings"></div>
+  </aside>
+
+  <section class="stage">
+    <div class="stagebar">
+      <div class="slidetitle" id="slideTitle"></div>
+      <div class="spacer"></div>
+      <div class="legend">
+        <span class="chip ph">Текст-плейсхолдер</span>
+        <span class="chip pic">Фото-плейсхолдер</span>
+        <span class="chip chrome">Декор лейаута</span>
+        <span class="chip media">Контент слайда</span>
+      </div>
+      <label class="check"><input id="overlayToggle" type="checkbox" checked> разметка</label>
+    </div>
+    <div class="canvaswrap" id="canvasWrap">
+      <div id="canvas"></div>
+    </div>
+    <div class="navhint">← → листать слайды · клик по фигуре — изменить её роль</div>
+  </section>
+
+  <aside class="inspector" id="inspector"></aside>
+</main>
+
+<section id="empty" class="empty">
+  <div class="drop" id="dropZone">
+    <img src="/static/icon.svg" alt="" class="bigicon">
+    <h1>Презентация → шаблон</h1>
+    <p>Перетащите сюда .pptx или <button class="link" id="pickBtn">выберите файл</button></p>
+    <ul class="tips">
+      <li>Похожие слайды объединяются в один лейаут.</li>
+      <li>Текст и фото становятся плейсхолдерами, декор запекается в лейаут.</li>
+      <li>Совет: переименуйте слайды в PowerPoint заранее, и лейауты получат понятные имена.</li>
+    </ul>
+    <p class="muted">Всё работает локально, файл никуда не отправляется.</p>
+  </div>
+</section>
+
+<div id="dropOverlay" class="dropoverlay hidden"><div>Отпустите, чтобы открыть</div></div>
+<div id="busy" class="busy hidden"><div class="spinner"></div><div id="busyText">Обработка…</div></div>
+<dialog id="dialog"><div id="dialogBody"></div><form method="dialog"><button class="btn">Закрыть</button></form></dialog>
+<div id="toast" class="toast hidden"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
